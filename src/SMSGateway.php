@@ -39,6 +39,8 @@ class SMSGateway
      *
      * @param $telephone
      * @param $message
+     * @return bool
+     * @throws \Exception
      */
     public function send($telephone, $message)
     {
@@ -56,8 +58,6 @@ class SMSGateway
 
         $uri .= http_build_query($params);
 
-
-
         $client = new Client();
 
         $response = $client->get($uri);
@@ -66,7 +66,13 @@ class SMSGateway
 //
 //        var_dump($response->getStatusCode());
 //        var_dump($response->getReasonPhrase());
-//        var_dump(json_decode($body = $response->getBody()->getContents()));
+        $result = json_decode($body = $response->getBody()->getContents(), true);
+
+        if (array_key_exists('error', $result)) {
+            throw new \Exception('SMSC Error with message: ' . $result['error'] . '. Code: ' . $result['error_code']);
+        }
+
+        return true;
 
     }
 }
